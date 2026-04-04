@@ -1,4 +1,5 @@
 import InputBox from "./InputBox";
+import MessageList from "./MessageList";
 import type { Message } from "../type";
 import { useState } from "react";
 
@@ -7,9 +8,14 @@ function ChatContainer(){
     const [isLoading, setIsLoading] = useState(false)
 
     // Updating message list 
-    const addMessage = (message: Message) => setMessages([...messages, message])
+    const onSendMessage = (message: Message) => {
+        setMessages([...messages, message])
+    } 
 
-    return(<InputBox></InputBox>)
+    return(<>
+        <MessageList messages={messages}></MessageList>
+        <InputBox onSendMessage={onSendMessage}></InputBox>
+    </>)
 }
 
 export default ChatContainer

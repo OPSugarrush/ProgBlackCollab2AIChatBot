@@ -2,14 +2,14 @@ export interface Message {
   id: string;
   sender: 'user' | 'system';
   content: string;
-  timestamp: number;
+  timestamp: string;
   // Optional: For handling errors or "retry" logic
   status?: 'sending' | 'sent' | 'error';
 }
 
 export interface InputBoxProps {
   // Attributes passed to InputBox component
-    onSendMessage: (message: string) => void;
+    onSendMessage: (message: Message) => void;
     disabled?: boolean
     placeholder?: string
 }

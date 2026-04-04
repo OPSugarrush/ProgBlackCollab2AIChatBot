@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
+import type { Message } from '../type';
 import type { InputBoxProps } from '../type';
 
 function InputBox(inputProps: InputBoxProps){
@@ -6,10 +7,22 @@ function InputBox(inputProps: InputBoxProps){
     const [text, setText] = useState('');
 
     // Handling sending messages
-    const sendMessage = () => {}
+    const handleSend = () => {
+        let dateTime = new Date()
+
+        const newMessage: Message = { 
+            id: "CHANGE SOON",
+            sender: "user",
+            content: text,
+            timestamp: dateTime.toLocaleTimeString()
+        }
+        
+        inputProps.onSendMessage(newMessage)
+        setText("") // Clear input box after sending
+    }
 
     // Handling text change in input box
-    const addToText = () => {}
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => { setText(e.target.value) }
 
     return(
         <div className = "input-container">
@@ -19,12 +32,12 @@ function InputBox(inputProps: InputBoxProps){
                 rows={1}
                 value={text}
                 maxLength={500}
-                onChange={addToText}
+                onChange={handleChange}
                 disabled={inputProps.disabled}/>
 
             <button 
                 className="sendButton" 
-                onClick={sendMessage}>
+                onClick={handleSend}>
                 Send
             </button>
         </div>     

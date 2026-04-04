@@ -1,14 +1,14 @@
 // Individual bubbles (styles differ for "User" vs. "Assistant")
 import type { Message } from "../type";
 
-function MessageItem(message: Message){
-    const { content, sender } = message;
+function MessageItem(message: {message: Message}){
+    const { content, sender, timestamp } = message.message;
 
     return(
-        <h1 className="message-item">
-            // Little Icon to represent AI goes here
+        // Little Icon to represent AI goes here
+        <h1 className="message-item">           
             {sender === 'system' && null}
-            {content}
+            {content}. {timestamp}
         </h1>
     )
     

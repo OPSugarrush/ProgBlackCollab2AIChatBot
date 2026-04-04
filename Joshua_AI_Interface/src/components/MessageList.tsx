@@ -1,10 +1,17 @@
 // A scrollable area that maps through the messages
-import { useState } from "react";
+import type { Message } from "../type";
+import MessageItem from "./MessageItem";
 
-function MessageList(){
-    
+function MessageList(MessageInfo: {messages: Message[]}){
+     // Use MessageItem for each message
+     let messageItems = MessageInfo.messages.map(mesg => <MessageItem message={mesg}/>)
 
-     return(<></>)
+     return(
+          <div className="message-list">
+               {messageItems}
+          </div>
+     )
+
 }
 
 export default MessageList
