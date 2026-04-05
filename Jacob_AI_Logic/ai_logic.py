@@ -1,7 +1,6 @@
-#Jacob Deheer-Graham
+# Jacob Deheer-Graham
 """
-
-This module handles the core AI logic for the chatbot system.
+This part handles the core AI logic for the chatbot system.
 
 Role in project:
 - Receives user input
@@ -9,19 +8,23 @@ Role in project:
 - Builds a prompt
 - Generates a response (rule-based for now)
 
-This file will later be imported into the FastAPI backend by Jimi,
-where generate_response() will be called inside an API endpoint.
+This file is now designed to be imported into the FastAPI backend by Jimi,
+where handle_message() will be called inside the /chat endpoint.
+
+Progression from previous version:
+- Improved structure for backend integration
+- Added clearer input/output handling
+- Introduced basic prompt instruction structure
 
 Future expansions:
-- Add conversation memory
-- Improve prompt structure
-- Replace rule-based logic with more advanced response generation
+- Add simple conversation memory (last 2–3 messages)
+- Improve prompt structure using history
+- Refine response logic for better coverage
 """
 
+# 1: Input Processing
 
-#1: Input Processing
-
-def process_input(user_input):
+def process_input(user_input: str) -> str:
     """
     Cleans and standardises user input.
 
@@ -31,19 +34,25 @@ def process_input(user_input):
 
     Current behaviour:
     - Converts text to lowercase
+    - Removes extra whitespace
+    - Basic type safety
 
     Future:
     - Could remove punctuation
     - Could handle commands
     """
-    return user_input.strip().lower()
+
+    if not isinstance(user_input, str):
+        return ""
+
+    cleaned = user_input.strip().lower()
+
+    return cleaned
 
 
+# 2: Prompt Building
 
-#2: Prompt Building
-
-
-def build_prompt(user_input):
+def build_prompt(user_input: str) -> str:
     """
     Converts processed input into a structured prompt format.
 
@@ -51,71 +60,87 @@ def build_prompt(user_input):
     - Introduces prompt engineering concept
     - Mimics how real AI systems structure input
 
+    Structure:
+    - Basic system instruction
+    - User message
+    - AI response placeholder
+
     Example output:
+    You are a helpful assistant.
     User: hello
     AI:
     """
-    prompt = f"User: {user_input}\nAI:"
+
+    system_instruction = "You are a helpful assistant."
+
+    prompt = (
+        f"{system_instruction}\n"
+        f"User: {user_input}\n"
+        f"AI:"
+    )
+
     return prompt
 
-#3: Response Generation
 
-def generate_response(user_input):
+# 3: Response Generation
+
+def generate_response(user_input: str) -> str:
     """
     Main function that generates a chatbot response.
 
-    This function will be used by:
-    - FastAPI backend
-    - Called inside the /chat endpoint
+    This function is used by:
+    - FastAPI backend (via handle_message)
 
     Flow:
     user input → processed → prompt → response
     """
 
-    #Step 1: Process input
+    # Step 1: Process input
     processed_input = process_input(user_input)
 
-    #Step 2: Build prompt (for structure, even if not fully used yet)
+    # Step 2: Build prompt (structure for future expansion)
     prompt = build_prompt(processed_input)
 
-    # Potenttial future DEBUG
+    # DEBUG (optional)
     # print("DEBUG PROMPT:", prompt)
 
-    # Step 3: Generate response (simple rule-based system for now)
+    # Step 3: Generate response (simple rule-based system)
     if "hello" in processed_input:
-        return "Hi! How can I help you?"
+        response = "Hi! How can I help you?"
 
     elif "how are you" in processed_input:
-        return "I'm just a simple chatbot, but I'm working fine!"
+        response = "I'm just a simple chatbot, but I'm working fine!"
 
     elif "bye" in processed_input:
-        return "Goodbye! See you later."
+        response = "Goodbye! See you later."
 
     else:
-        return "I'm not sure how to respond to that yet."
+        response = "I'm not sure how to respond to that yet."
+
+    return response
 
 
+# 4: Backend Interface (NEW)
 
-#4: Formatting (Might remove later)
-
-
-def format_response(response):
+def handle_message(user_input: str) -> dict:
     """
-    Formats chatbot output.
+    Handles a message and returns a structured response.
 
     Why this exists:
-    - Separates presentation from logic
-    - Allows reuse in frontend/backend
+    - Acts as the interface between backend and AI logic
+    - Returns data in JSON-friendly format
 
-    Note:
-    - Frontend coder (Joshua) may override this later
+    This is the function Jimi will call in FastAPI.
     """
 
-    return f"Bot: {response}"
+    response_text = generate_response(user_input)
+
+    return {
+        "response": response_text
+    }
 
 
-
-#5: Local Test System
+# 5: Local Test System
 
 def run_chat():
     """
@@ -123,10 +148,9 @@ def run_chat():
 
     Purpose:
     - Allows independent testing without backend/frontend
-    - Demonstrates working system temp
+    - Now reflects how backend will use the system
 
     How to use:
-    Run this file directly:
     python ai_logic.py
     """
 
@@ -139,15 +163,12 @@ def run_chat():
             print("Bot: Goodbye!")
             break
 
-        response = generate_response(user_message)
-        formatted = format_response(response)
+        result = handle_message(user_message)
 
-        print(formatted)
-
+        print(f"Bot: {result['response']}")
 
 
-#Entry Point:
-
+# Entry Point
 
 if __name__ == "__main__":
     run_chat()
