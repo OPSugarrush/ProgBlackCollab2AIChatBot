@@ -17,7 +17,7 @@ Progression from previous version:
 - Introduced basic prompt instruction structure
 
 Future expansions:
-- Add simple conversation memory (last 2–3 messages)
+- Add simple conversation memory (last 2 - 3 messages)
 - Improve prompt structure using history
 - Refine response logic for better coverage
 """
