@@ -1,15 +1,15 @@
 """
-Student 2 Backend (FastAPI)
+Jimi (FastAPI)
 
 This file handles:
 - receiving requests from frontend
-- sending messages to AI logic module (Student 3)
+- sending messages to AI logic module (Jacob)
 - returning structured responses
 """
 
-# ===============================
+
 # FIX: allow sibling folder imports
-# ===============================
+
 
 import sys
 import os
@@ -18,31 +18,30 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
-# ===============================
+
 # FastAPI setup
-# ===============================
+
 
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-# Import Student 3 AI logic (DO NOT MODIFY AI FILE)
+# Import Jacob's AI logic 
 from Jacob_AI_Logic.ai_logic import handle_message
 
 
 app = FastAPI()
 
 
-# ===============================
+
 # Request model (from frontend)
-# ===============================
 
 class ChatRequest(BaseModel):
     message: str
 
 
-# ===============================
+
 # Main chat endpoint
-# ===============================
+
 
 @app.post("/chat")
 def chat(request: ChatRequest):
@@ -55,9 +54,9 @@ def chat(request: ChatRequest):
     return result
 
 
-# ===============================
+
 # Basic test route
-# ===============================
+
 
 @app.get("/")
 def root():
