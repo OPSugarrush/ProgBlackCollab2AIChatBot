@@ -10,6 +10,7 @@ export interface Message {
 export interface InputBoxProps {
   // Attributes passed to InputBox component
     onSendMessage: (message: Message) => void;
-    disabled?: boolean
+    isLoading?: boolean
     placeholder?: string
+    setLoading: (loading: boolean) => void;
 }

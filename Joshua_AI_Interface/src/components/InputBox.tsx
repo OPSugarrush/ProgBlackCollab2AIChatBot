@@ -1,28 +1,61 @@
-import { useState, type ChangeEvent } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import type { Message } from '../type';
 import type { InputBoxProps } from '../type';
+import { v4 as uuid } from 'uuid';
 
 function InputBox(inputProps: InputBoxProps){
 
     const [text, setText] = useState('');
 
-    // Handling sending messages
-    const handleSend = () => {
-        let dateTime = new Date()
+    // Button style changes when loading state changes
+    useEffect(() => {
+        changeButtonDesign();
+    }, [inputProps.isLoading])
 
+    const changeButtonDesign = () => {
+        const sendButton = document.querySelector('.sendButton') as HTMLButtonElement | null;
+        if (sendButton) {
+            if (inputProps.isLoading) {
+                sendButton.style.backgroundColor = '#ccc'; 
+                sendButton.style.cursor = 'not-allowed';
+            } else {
+                sendButton.style.backgroundColor = '#4CAF50';
+                sendButton.style.cursor = 'pointer';
+            }
+        }
+    }
+    // Handling sending messages
+    const handleSend = () => {        
         const newMessage: Message = { 
-            id: "CHANGE SOON",
+            id: uuid(),
             sender: "user",
             content: text,
-            timestamp: dateTime.toLocaleTimeString()
+            timestamp: new Date().toISOString()
         }
         
         inputProps.onSendMessage(newMessage)
+        inputProps.setLoading(true)
         setText("") // Clear input box after sending
     }
 
+    // Handles keypresses in textarea
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    };
+
     // Handling text change in input box
-    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => { setText(e.target.value) }
+    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => 
+        { 
+            const target = e.target;           
+
+            setText(target.value);
+
+            target.style.height = 'auto';
+            target.style.height = `${target.scrollHeight}px`;
+        }
 
     return(
         <div className = "input-container">
@@ -33,11 +66,13 @@ function InputBox(inputProps: InputBoxProps){
                 value={text}
                 maxLength={500}
                 onChange={handleChange}
-                disabled={inputProps.disabled}/>
+                onKeyDown={handleKeyDown}
+                disabled={inputProps.isLoading}/>
 
             <button 
                 className="sendButton" 
-                onClick={handleSend}>
+                onClick={handleSend}
+                disabled={inputProps.isLoading || text.trim() === ""}>
                 Send
             </button>
         </div>     
