@@ -59,7 +59,7 @@
   background-color: #DCF8C6;
   border-radius: 20px;
   padding: 20px;
-  margin: 0px 10px;
+  margin: 7.5px 10px;
   font-size: 12px;
   max-width: 60%;
   align-self: flex-end;
@@ -81,7 +81,7 @@
   border-radius: 20px;
   padding: 20px;
   font-size: 12px;
-  margin: 0px 10px;
+  margin: 7.5px 10px;
   max-width: 60%;
   align-self: flex-start;
   flex-direction: row;
