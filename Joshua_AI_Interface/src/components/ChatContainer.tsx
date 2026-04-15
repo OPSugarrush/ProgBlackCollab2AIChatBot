@@ -20,7 +20,7 @@ function ChatContainer(){
                 id: uuidv4(),
                 sender: 'system',
                 content: `Echo: ${message.content}`,
-                timestamp: new Date().toISOString(),
+                timestamp: new Date().toLocaleTimeString(),
             }
             setMessages(prevMessage => [...prevMessage, systemMessage])
             setIsLoading(false)

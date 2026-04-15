@@ -10,14 +10,24 @@ function MessageItem(message: {message: Message}){
     // Add an icon to determine who is user and who is system
     if (sender == "system"){ 
         return( <div className="message-item-system">
-            <img src={systemIcon} alt="System Icon" className="system-icon" />
-            <p>{content}</p>
+            <div className="message-contents-system">
+                <img src={systemIcon} alt="System Icon" className="system-icon" />
+                <p>{content}</p>
+            </div>
+            <div className="message-timestamp-system">
+                <p>{timestamp}</p>
+            </div>         
         </div>)
     } 
 
-    return(<div className="message-item-user">           
+    return(<div className="message-item-user">  
+        <div className="message-contents-user">
             <p>{content}</p>
             <img src={userIcon} alt="User Icon" className="user-icon" />
+        </div>
+        <div className="message-timestamp-user">
+            <p>{timestamp}</p>
+        </div>
         </div>
     )
 }

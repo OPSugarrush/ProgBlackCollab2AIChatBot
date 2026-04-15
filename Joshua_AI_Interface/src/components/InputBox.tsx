@@ -30,7 +30,7 @@ function InputBox(inputProps: InputBoxProps){
             id: uuid(),
             sender: "user",
             content: text,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toLocaleTimeString()
         }
         
         inputProps.onSendMessage(newMessage)
