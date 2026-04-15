@@ -15,14 +15,21 @@ Progression from previous version:
 - Improved structure for backend integration
 - Added clearer input/output handling
 - Introduced basic prompt instruction structure
+- Added simple conversation memory (last 2 - 3 messages)
 
 Future expansions:
-- Add simple conversation memory (last 2 - 3 messages)
-- Improve prompt structure using history
+- Improve prompt structure using history further
 - Refine response logic for better coverage
+- Add fallback to real AI model if no rule matches
 """
 
-# 1: Input Processing
+# Conversation Memory
+
+history = []
+MAX_HISTORY = 3
+
+
+# Input Processing
 
 def process_input(user_input: str) -> str:
     """
@@ -50,7 +57,7 @@ def process_input(user_input: str) -> str:
     return cleaned
 
 
-# 2: Prompt Building
+# Prompt Building
 
 def build_prompt(user_input: str) -> str:
     """
@@ -62,19 +69,29 @@ def build_prompt(user_input: str) -> str:
 
     Structure:
     - Basic system instruction
+    - Conversation history
     - User message
     - AI response placeholder
 
     Example output:
     You are a helpful assistant.
     User: hello
+    AI: Hi!
+    User: how are you
     AI:
     """
 
     system_instruction = "You are a helpful assistant."
 
+    history_text = ""
+
+    for entry in history:
+        history_text += f"User: {entry['user']}\n"
+        history_text += f"AI: {entry['bot']}\n"
+
     prompt = (
         f"{system_instruction}\n"
+        f"{history_text}"
         f"User: {user_input}\n"
         f"AI:"
     )
@@ -82,7 +99,7 @@ def build_prompt(user_input: str) -> str:
     return prompt
 
 
-# 3: Response Generation
+# Response Generation
 
 def generate_response(user_input: str) -> str:
     """
@@ -92,17 +109,17 @@ def generate_response(user_input: str) -> str:
     - FastAPI backend (via handle_message)
 
     Flow:
-    user input → processed → prompt → response
+    user input → processed → prompt → response → memory update (NEW)
     """
 
     # Step 1: Process input
     processed_input = process_input(user_input)
 
-    # Step 2: Build prompt (structure for future expansion)
+    # Step 2: Build prompt (now includes memory)
     prompt = build_prompt(processed_input)
-
-    # DEBUG (optional)
-    # print("DEBUG PROMPT:", prompt)
+    # Prompt currently not used in rule-based response,
+    # but included to demonstrate AI system structure and for future expansion.
+  
 
     # Step 3: Generate response (simple rule-based system)
     if "hello" in processed_input:
@@ -114,13 +131,31 @@ def generate_response(user_input: str) -> str:
     elif "bye" in processed_input:
         response = "Goodbye! See you later."
 
+    # Simple memory-based response (Change later?)
+    elif "what did I just say" in processed_input:
+        if history:
+            response = f"You previously said: '{history[-1]['user']}'"
+        else:
+            response = "I don't have any previous messages stored yet."
+
     else:
         response = "I'm not sure how to respond to that yet."
+
+    # Step 4: Update memory 
+
+    history.append({
+        "user": processed_input,
+        "bot": response
+    })
+
+    # Limit memory size
+    if len(history) > MAX_HISTORY:
+        history.pop(0)
 
     return response
 
 
-# 4: Backend Interface (NEW)
+# Backend Interface 
 
 def handle_message(user_input: str) -> dict:
     """
@@ -140,7 +175,7 @@ def handle_message(user_input: str) -> dict:
     }
 
 
-# 5: Local Test System
+# Local Test System
 
 def run_chat():
     """
@@ -149,6 +184,7 @@ def run_chat():
     Purpose:
     - Allows independent testing without backend/frontend
     - Now reflects how backend will use the system
+    - Allows testing of memory behaviour (NEW)
 
     How to use:
     python ai_logic.py
