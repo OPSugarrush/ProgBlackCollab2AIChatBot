@@ -10,7 +10,6 @@ This file handles:
 
 # FIX: allow sibling folder imports
 
-
 import sys
 import os
 
@@ -20,7 +19,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
 # FastAPI setup
-
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -32,6 +30,19 @@ from Jacob_AI_Logic.ai_logic import handle_message
 app = FastAPI()
 
 
+# CORS Middleware (allows frontend to connect)
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all (fine for development)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 # Request model (from frontend)
 
@@ -41,7 +52,6 @@ class ChatRequest(BaseModel):
 
 
 # Main chat endpoint
-
 
 @app.post("/chat")
 def chat(request: ChatRequest):
@@ -56,7 +66,6 @@ def chat(request: ChatRequest):
 
 
 # Basic test route
-
 
 @app.get("/")
 def root():

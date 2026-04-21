@@ -20,11 +20,15 @@ Future expansions:
 """
 
 # AI fallback setup
-
 import os
-from openai import OpenAI
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+# Load the secret variables from the .env file
+load_dotenv()
+
+# Configure the Gemini API with your key
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 
 # Conversation Memory
@@ -80,7 +84,7 @@ def build_prompt(user_input: str) -> str:
     AI:
     """
 
-    system_instruction = "You are a helpful assistant."
+    system_instruction = "You are a helpful assistant.\n"
 
     history_text = ""
 
@@ -132,27 +136,26 @@ def generate_response(user_input: str) -> str:
         response = "Goodbye! See you later."
 
     # Simple memory-based response
-    elif "what did I just say" in processed_input:
+    elif "what did i just say" in processed_input: # Note: lowercased because of process_input()
         if history:
             response = f"You previously said: '{history[-1]['user']}'"
         else:
             response = "I don't have any previous messages stored yet."
 
     else:
-        # AI fallback
+        # AI fallback (Now using Google Gemini)
         try:
-            ai_response = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
+            # We use Gemini 1.5 Flash as it is fast and has a free tier
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            
+            # Pass your perfectly built prompt string directly to the model
+            ai_response = model.generate_content(prompt)
+            
+            response = ai_response.text
 
-            response = ai_response.choices[0].message.content
-
-        except Exception:
+        except Exception as e:
             # Safe fallback if API fails
+            print(f"\n[Debug Error: {e}]\n") # Added so you can see if your API key fails
             response = "I'm not sure how to respond to that yet."
 
 
