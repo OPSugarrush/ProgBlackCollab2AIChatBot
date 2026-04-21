@@ -12,16 +12,20 @@ This file is now designed to be imported into the FastAPI backend by Jimi,
 where handle_message() will be called inside the /chat endpoint.
 
 Progression from previous version:
-- Improved structure for backend integration
-- Added clearer input/output handling
-- Introduced basic prompt instruction structure
 - Added simple conversation memory (last 2 - 3 messages)
+- Added AI fallback for unknown responses 
 
 Future expansions:
 - Improve prompt structure using history further
-- Refine response logic for better coverage
-- Add fallback to real AI model if no rule matches
 """
+
+# AI fallback setup
+
+import os
+from openai import OpenAI
+
+client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+
 
 # Conversation Memory
 
@@ -43,12 +47,7 @@ def process_input(user_input: str) -> str:
     - Converts text to lowercase
     - Removes extra whitespace
     - Basic type safety
-
-    Future:
-    - Could remove punctuation
-    - Could handle commands
     """
-
     if not isinstance(user_input, str):
         return ""
 
@@ -109,7 +108,7 @@ def generate_response(user_input: str) -> str:
     - FastAPI backend (via handle_message)
 
     Flow:
-    user input → processed → prompt → response → memory update (NEW)
+    user input → processed → prompt → response → memory update 
     """
 
     # Step 1: Process input
@@ -117,11 +116,12 @@ def generate_response(user_input: str) -> str:
 
     # Step 2: Build prompt (now includes memory)
     prompt = build_prompt(processed_input)
-    # Prompt currently not used in rule-based response,
+    # Prompt currently not used directly in rule-based response,
     # but included to demonstrate AI system structure and for future expansion.
-  
 
-    # Step 3: Generate response (simple rule-based system)
+
+    # Step 3: Generate response (hybrid system)
+
     if "hello" in processed_input:
         response = "Hi! How can I help you?"
 
@@ -131,7 +131,7 @@ def generate_response(user_input: str) -> str:
     elif "bye" in processed_input:
         response = "Goodbye! See you later."
 
-    # Simple memory-based response (Change later?)
+    # Simple memory-based response
     elif "what did I just say" in processed_input:
         if history:
             response = f"You previously said: '{history[-1]['user']}'"
@@ -139,7 +139,22 @@ def generate_response(user_input: str) -> str:
             response = "I don't have any previous messages stored yet."
 
     else:
-        response = "I'm not sure how to respond to that yet."
+        # AI fallback
+        try:
+            ai_response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
+            response = ai_response.choices[0].message.content
+
+        except Exception:
+            # Safe fallback if API fails
+            response = "I'm not sure how to respond to that yet."
+
 
     # Step 4: Update memory 
 
