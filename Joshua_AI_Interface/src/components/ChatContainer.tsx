@@ -15,22 +15,19 @@ function ChatContainer(){
 
         // Get response from backend
          try {
-            // 1. Properly await the fetch call
             const response = await fetch('http://127.0.0.1:8000/chat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                // 2. Wrap the content in an object matching the FastAPI ChatRequest
                 body: JSON.stringify({ message: message.content })
             });
 
             if (response.ok) {
-                // 3. Parse the JSON response
                 const data = await response.json();
                 console.log("Response from backend:", data);
 
-                // 4. Create the bot message using data.response (matching ai_logic.py)
+                // Create the bot message and add it to the message list
                 const systemMessage: Message = {
                     id: uuidv4(),
                     sender: 'system',
@@ -54,7 +51,6 @@ function ChatContainer(){
             };
             setMessages(prevMessage => [...prevMessage, errorMessage]);
         } finally {
-            // 5. Always stop loading, pass or fail
             setIsLoading(false);
         }
     } 

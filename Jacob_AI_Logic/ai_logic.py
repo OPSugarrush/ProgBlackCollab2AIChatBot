@@ -157,15 +157,16 @@ def generate_response(user_input: str) -> str:
             # Ensure API is configured with whatever is currently in environment
             api_key = os.environ.get("GEMINI_API_KEY")
             if not api_key:
-                raise ValueError("No API Key found in environment")
+                raise ValueError("No API Key found in environment") 
                 
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-flash')
             
             ai_response = model.generate_content(prompt)
-            response = ai_response.text
-        except:
-            # Keep error hidden 
+            response = ai_response.text           
+        except Exception as e:
+            # This will print the EXACT reason it's failing in your terminal
+            print(f"DEBUG: The AI failed because: {e}")
             response = "I'm not sure how to respond to that yet."
 
 
