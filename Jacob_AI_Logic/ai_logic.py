@@ -23,12 +23,20 @@ Future expansions:
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
+from pathlib import Path
 
-# Load the secret variables from the .env file
-load_dotenv()
+# This finds the .env file even if the terminal is in a different folder
+current_dir = Path(__file__).resolve().parent
+env_in_current = current_dir / ".env"
+env_in_backend = current_dir.parent / "backend" / ".env"
 
-# Configure the Gemini API with your key
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+if env_in_current.exists():
+    load_dotenv(dotenv_path=env_in_current)
+elif env_in_backend.exists():
+    load_dotenv(dotenv_path=env_in_backend)
+else:
+   
+    load_dotenv()
 
 
 # Conversation Memory
@@ -146,16 +154,18 @@ def generate_response(user_input: str) -> str:
         # AI fallback (Now using Google Gemini)
         try:
             # We use Gemini 1.5 Flash as it is fast and has a free tier
+            # Ensure API is configured with whatever is currently in environment
+            api_key = os.environ.get("GEMINI_API_KEY")
+            if not api_key:
+                raise ValueError("No API Key found in environment")
+                
+            genai.configure(api_key=api_key)
             model = genai.GenerativeModel('gemini-1.5-flash')
             
-            # Pass your perfectly built prompt string directly to the model
             ai_response = model.generate_content(prompt)
-            
             response = ai_response.text
-
-        except Exception as e:
-            # Safe fallback if API fails
-            print(f"\n[Debug Error: {e}]\n") # Added so you can see if your API key fails
+        except:
+            # Keep error hidden 
             response = "I'm not sure how to respond to that yet."
 
 
