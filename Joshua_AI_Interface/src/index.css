@@ -112,6 +112,7 @@
 .message-item-system .message-contents-system {
   display: flex;
   align-items: center;
+  font-family: Arial, Helvetica, sans-serif
 }
 
 .message-item-system .message-timestamp-system {
@@ -120,6 +121,7 @@
   align-self: flex-end;
   font-size: 8.5px;
   color: #888888;
+  font-family: Arial, Helvetica, sans-serif
 }
 
 .message-item-user img {
