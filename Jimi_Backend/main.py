@@ -6,66 +6,41 @@ This file handles:
 - sending messages to AI logic module (Jacob)
 - returning structured responses
 """
-
-
-# FIX: allow sibling folder imports
-
 import sys
 import os
+from fastapi import FastAPI
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 # Add project root to Python path so we can import AI module
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-
-
-# FastAPI setup
-
-from fastapi import FastAPI
-from pydantic import BaseModel
-
-# Import Jacob's AI logic 
+# Import your AI logic (ensure folder names match your project structure)
 from Jacob_AI_Logic.ai_logic import handle_message
-
 
 app = FastAPI()
 
-
-# CORS Middleware (allows frontend to connect)
-
-from fastapi.middleware.cors import CORSMiddleware
-
+# CORS Middleware (Allows React to talk to FastAPI)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow all (fine for development)
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-
-# Request model (from frontend)
-
+# Request model (Matches frontend body payload)
 class ChatRequest(BaseModel):
     message: str
-
-
-
-# Main chat endpoint
 
 @app.post("/chat")
 def chat(request: ChatRequest):
     """
-    Receives message from frontend,
-    sends it to AI logic,
-    returns response.
+    Receives message from frontend, sends it to AI logic, returns response.
     """
+    # request.message extracts the string from the JSON object
     result = handle_message(request.message)
     return result
-
-
-
-# Basic test route
 
 @app.get("/")
 def root():
