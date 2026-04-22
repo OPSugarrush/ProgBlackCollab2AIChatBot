@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent } from 'react';
 import type { Message } from '../type';
 import type { InputBoxProps } from '../type';
 import { v4 as uuid } from 'uuid';
+import sendButtonImage from '../assets/paperplane.png';
 
 function InputBox(inputProps: InputBoxProps){
 
@@ -73,7 +74,7 @@ function InputBox(inputProps: InputBoxProps){
                 className="sendButton" 
                 onClick={handleSend}
                 disabled={inputProps.isLoading || text.trim() === ""}>
-                Send
+                <img src={sendButtonImage} alt="Send" className='send-button-img' height={50} width={50}/>
             </button>
         </div>     
     );
