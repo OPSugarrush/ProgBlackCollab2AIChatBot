@@ -4,7 +4,7 @@ import ChatContainer from "./components/ChatContainer"
 function App() {
 
   return (
-    <ChatContainer/>
+      <ChatContainer/>
   )
 }
 

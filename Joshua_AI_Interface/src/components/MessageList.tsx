@@ -1,9 +1,9 @@
 // A scrollable area that maps through the messages
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Message } from "../type";
 import MessageItem from "./MessageItem";
 
-function MessageList(MessageInfo: {messages: Message[]}){
+function MessageList(MessageInfo: { messages: Message[], showStartTyping: boolean, messageReceived: boolean }) {
      // Ref to dummy div at end of message list
      const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -18,14 +18,17 @@ function MessageList(MessageInfo: {messages: Message[]}){
 
      console.log("Message List:", MessageInfo.messages); // Check if messsages update correctly
 
-     let messageItems = MessageInfo.messages.map((message, index) => <MessageItem key={index} message={message}/>)
+     let messageItems = MessageInfo.messages.map((message, index) => 
+     <MessageItem index={index} message={message} messageListLength={MessageInfo.messages.length} messageReceived={MessageInfo.messageReceived} />)
 
-     return(
-          <div className="message-list">
-               {messageItems}
-
-               <div ref={messagesEndRef} />
-          </div>  
+     return(       
+          <>
+               <div className="message-list">
+                    {MessageInfo.showStartTyping ? <p className = "start-typing">Start typing to chat with the bot...</p> : null}
+                    {messageItems}
+                    <div ref={messagesEndRef} />
+               </div>  
+          </>
      )
 
 }

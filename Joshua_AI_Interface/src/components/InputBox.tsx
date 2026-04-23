@@ -55,7 +55,11 @@ function InputBox(inputProps: InputBoxProps){
             setText(target.value);
 
             target.style.height = 'auto';
-            target.style.height = `${target.scrollHeight}px`;
+            if (target.scrollHeight > 90) {
+                target.style.height = '90px';
+            } else {
+                target.style.height = `${target.scrollHeight}px`;
+            }
         }
 
     return(
@@ -74,7 +78,7 @@ function InputBox(inputProps: InputBoxProps){
                 className="sendButton" 
                 onClick={handleSend}
                 disabled={inputProps.isLoading || text.trim() === ""}>
-                <img src={sendButtonImage} alt="Send" className='send-button-img' height={50} width={50}/>
+                <img src={sendButtonImage} alt="Send" className='send-button-img' height={45} width={45}/>
             </button>
         </div>     
     );

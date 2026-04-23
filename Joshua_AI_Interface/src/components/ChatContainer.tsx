@@ -1,17 +1,35 @@
 import InputBox from "./InputBox";
 import MessageList from "./MessageList";
 import type { Message } from "../type";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {v4 as uuidv4} from 'uuid';
 
 function ChatContainer(){
     const [messages, setMessages] = useState<Message[]>([])
     const [isLoading, setIsLoading] = useState(false)
+    const [showStartTyping, setShowStartTyping] = useState(true);
+    const [messageReceived, setMessageReceived] = useState(false);
+
+    useEffect(() => {
+        if(messages.length > 0){
+            setShowStartTyping(false);
+        }
+    }, [messages]);
 
     // Updating message list 
     const onSendMessage = async (message: Message) => {
+        setMessageReceived(false);
         console.log("New Message:", message); // Debugging log
         setMessages(prevMessages => [...prevMessages, message])
+
+        // Add loading message to message list
+        const loadingMessage: Message = {
+            id: uuidv4(),
+            sender: 'system',
+            content: '',
+            timestamp: new Date().toLocaleTimeString(),
+        }
+        setMessages(prevMessages => [...prevMessages, loadingMessage]);
 
         // Get response from backend
          try {
@@ -24,6 +42,8 @@ function ChatContainer(){
             });
 
             if (response.ok) {
+                setMessageReceived(true);
+
                 const data = await response.json();
                 console.log("Response from backend:", data);
 
@@ -36,11 +56,18 @@ function ChatContainer(){
                     status: 'sent'
                 };
                
-                setMessages(prevMessage => [...prevMessage, systemMessage]);
+
+                setMessages(prevMessages => {
+                    const updatedMessages = prevMessages.map(msg => 
+                    msg.id === loadingMessage.id ? systemMessage : msg);
+                    return updatedMessages;
+                });
             } else {
                 throw new Error(`Server error: ${response.status}`);
             }
         } catch (error) {
+            setMessageReceived(true);
+
             console.error("Failed to fetch response from backend", error);
             const errorMessage: Message = {
                 id: uuidv4(),
@@ -56,7 +83,7 @@ function ChatContainer(){
     } 
 
     return(<div className="chat-container">
-        <MessageList messages={messages}></MessageList>
+        <MessageList messages={messages} showStartTyping={showStartTyping} messageReceived={messageReceived}></MessageList>
         <InputBox onSendMessage={onSendMessage} isLoading={isLoading} setLoading={setIsLoading}></InputBox>
     </div>)
 }
