@@ -18,5 +18,7 @@ JOSH FOR BACKEND TO FRONT END USE POST REQUEST TO "http://127.0.0.1:8000/chat" a
 ### Visual Studio code
 1. Create .env file in project root and add: **GEMINI_API_KEY=your_api_key_here**
 2. Ensure __init__.py exists in Jacob_AI_Logic folder (for imports)
-3. Run backend server: uvicorn main:app --reload (first change directory to "Jimi_Backend" in terminal)
+3. Press Ctrl+Shift+P to open **Command Pallete** and search "Python: Select Interpreter" and find "chatbot". Click on **"chatbot"**
+4. Run backend server in Visual Studio Code terminal (Ctrl+Shift+`): uvicorn main:app --reload **(first change directory to "Jimi_Backend" in terminal)**
+5. Open new terminal, change directory to **"Joshua_AI_Interface"** and then run server for frontend with **npm run dev**
 
