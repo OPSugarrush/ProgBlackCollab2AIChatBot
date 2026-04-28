@@ -1,6 +1,4 @@
 # ProgBlackCollab2AIChatBot
-JOSH FOR BACKEND TO FRONT END USE POST REQUEST TO "http://127.0.0.1:8000/chat" and use a JSON file to send msgs and data.
-
 ## For things to function:
 * Clone repo
 
