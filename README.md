@@ -1,4 +1,4 @@
-Jacob Deheer-Graham, twrk86, Private Submission Repository link for assignment marker: https://github.com/OPSugarrush/comp1101-summative2-submission
+# IMPORTANT FOR STEVEN BRADLEY: Jacob Deheer-Graham, twrk86, Private Submission Repository link for assignment marker: https://github.com/OPSugarrush/comp1101-summative2-submission
 
 # ProgBlackCollab2AIChatBot
 ## For things to function:
