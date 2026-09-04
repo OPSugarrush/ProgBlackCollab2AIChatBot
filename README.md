@@ -8,9 +8,9 @@ The application is divided into several components covering the frontend, backen
 
 Main work on each section for final project iteration: 
 
-* **`Jacob_AI_Logic`** – AI conversation logic, prompt processing and Gemini API integration
-* **`Jimi_Backend`** – FastAPI backend and API integration
-* **`Joshua_AI_Interface`** – React-based frontend interface
+* **`AI_Logic`** – AI conversation logic, prompt processing and Gemini API integration
+* **`Backend`** – FastAPI backend and API integration
+* **`AI_Interface`** – React-based frontend interface
 
 Development was carried out collaboratively, with team members contributing across different parts of the application, including frontend development and integration between system components.
 
