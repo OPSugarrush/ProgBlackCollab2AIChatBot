@@ -1,4 +1,8 @@
+# Secrets and generated Python files should stay local to each developer.
 .env
+.venv/
 __pycache__/
 *.pyc
+
+# Editor settings are personal unless explicitly shared.
 .vscode/

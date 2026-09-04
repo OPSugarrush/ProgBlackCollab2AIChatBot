@@ -1,36 +1,32 @@
-// A scrollable area that maps through the messages
-import { useEffect, useRef, useState } from "react";
-import type { Message } from "../type";
-import MessageItem from "./MessageItem";
+import { useEffect, useRef } from 'react';
 
-function MessageList(MessageInfo: { messages: Message[], showStartTyping: boolean, messageReceived: boolean }) {
-     // Ref to dummy div at end of message list
-     const messagesEndRef = useRef<HTMLDivElement | null>(null);
+import type { Message } from '../type';
+import MessageItem from './MessageItem';
 
-     const scrollToBottom = () => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-     };
-
-     // UseEffect used to scroll to dummy div when messaage list changes
-     useEffect(() => {
-          scrollToBottom();
-     }, [MessageInfo.messages]); 
-
-     console.log("Message List:", MessageInfo.messages); // Check if messsages update correctly
-
-     let messageItems = MessageInfo.messages.map((message, index) => 
-     <MessageItem index={index} message={message} messageListLength={MessageInfo.messages.length} messageReceived={MessageInfo.messageReceived} />)
-
-     return(       
-          <>
-               <div className="message-list">
-                    {MessageInfo.showStartTyping ? <p className = "start-typing">Start typing to chat with the bot...</p> : null}
-                    {messageItems}
-                    <div ref={messagesEndRef} />
-               </div>  
-          </>
-     )
-
+interface MessageListProps {
+  messages: Message[];
 }
 
-export default MessageList
+/** Displays messages and keeps the newest reply in view. */
+function MessageList({ messages }: MessageListProps) {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  return (
+    <section className="message-list" aria-live="polite" aria-label="Conversation">
+      {messages.length === 0 && (
+        <p className="start-typing">Start typing to chat with the bot...</p>
+      )}
+      {messages.map((message) => (
+        // The generated ID is a stable key when a pending response is replaced.
+        <MessageItem key={message.id} message={message} />
+      ))}
+      <div ref={messagesEndRef} />
+    </section>
+  );
+}
+
+export default MessageList;

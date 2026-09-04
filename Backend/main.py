@@ -1,49 +1,54 @@
-"""
-Jimi (FastAPI)
+"""FastAPI entry point for the chatbot.
 
-This file handles:
-- receiving requests from frontend
-- sending messages to AI logic module (Jacob)
-- returning structured responses
+The frontend sends a message to ``POST /chat``.  This module validates the
+request, passes the message to ``AI_Logic``, and returns a JSON response.
 """
+
 import sys
-import os
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
-# Add project root to Python path so we can import AI module
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Allow ``uvicorn main:app --reload`` to work when started inside Backend.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
-# Import your AI logic (ensure folder names match your project structure)
-from Jacob_AI_Logic.ai_logic import handle_message
+# The package name matches the folder in this repository.
+from AI_Logic.ai_logic import handle_message
 
-app = FastAPI()
+app = FastAPI(title="AI Chatbot API", version="1.0.0")
 
-# CORS Middleware (Allows React to talk to FastAPI)
+# Permit the Vite development server to call the local API.  Keeping this
+# list explicit is safer than allowing arbitrary websites to make requests.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["http://localhost:2999", "http://127.0.0.1:2999"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Request model (Matches frontend body payload)
 class ChatRequest(BaseModel):
+    """The JSON body accepted by the chat endpoint."""
+
     message: str
 
+
 @app.post("/chat")
-def chat(request: ChatRequest):
-    """
-    Receives message from frontend, sends it to AI logic, returns response.
-    """
-    # request.message extracts the string from the JSON object
-    result = handle_message(request.message)
-    return result
+def chat(request: ChatRequest) -> dict[str, str]:
+    """Generate a chatbot reply for a non-empty user message."""
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="A message is required.")
+
+    return handle_message(request.message)
+
 
 @app.get("/")
-def root():
+def root() -> dict[str, str]:
+    """Provide a small health-check response for local development."""
     return {
         "status": "Backend is running",
         "message": "Use /chat endpoint to talk to the bot"

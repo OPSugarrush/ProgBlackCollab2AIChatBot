@@ -1,87 +1,63 @@
-import { useEffect, useState, type ChangeEvent } from 'react';
-import type { Message } from '../type';
+import { useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import type { InputBoxProps } from '../type';
-import { v4 as uuid } from 'uuid';
 import sendButtonImage from '../assets/paperplane.png';
 
-function InputBox(inputProps: InputBoxProps){
+/** Collects a message and lets the parent component send it to the API. */
+function InputBox({ onSendMessage, isLoading }: InputBoxProps) {
+  const [text, setText] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    const [text, setText] = useState('');
+  const handleSend = () => {
+    const message = text.trim();
+    if (!message || isLoading) return;
 
-    // Button style changes when loading state changes
-    useEffect(() => {
-        changeButtonDesign();
-    }, [inputProps.isLoading])
+    onSendMessage(message);
+    setText('');
+  };
 
-    const changeButtonDesign = () => {
-        const sendButton = document.querySelector('.sendButton') as HTMLButtonElement | null;
-        if (sendButton) {
-            if (inputProps.isLoading) {
-                sendButton.style.backgroundColor = '#ccc'; 
-                sendButton.style.cursor = 'not-allowed';
-            } else {
-                sendButton.style.backgroundColor = '#4CAF50';
-                sendButton.style.cursor = 'pointer';
-            }
-        }
+  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter submits, while Shift + Enter keeps the standard multiline input.
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSend();
     }
-    // Handling sending messages
-    const handleSend = () => {        
-        const newMessage: Message = { 
-            id: uuid(),
-            sender: "user",
-            content: text,
-            timestamp: new Date().toLocaleTimeString()
-        }
-        
-        inputProps.onSendMessage(newMessage)
-        inputProps.setLoading(true)
-        setText("") // Clear input box after sending
+  };
+
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setText(event.target.value);
+
+    // Resize only this component's textarea instead of querying the document.
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 90)}px`;
     }
+  };
 
-    // Handles keypresses in textarea
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    };
-
-    // Handling text change in input box
-    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => 
-        { 
-            const target = e.target;           
-
-            setText(target.value);
-
-            target.style.height = 'auto';
-            if (target.scrollHeight > 90) {
-                target.style.height = '90px';
-            } else {
-                target.style.height = `${target.scrollHeight}px`;
-            }
-        }
-
-    return(
-        <div className = "input-container">
-            <textarea 
-                className="chat-textarea" 
-                placeholder="Type a message..."
-                rows={1}
-                value={text}
-                maxLength={500}
-                onChange={handleChange}
-                onKeyDown={handleKeyDown}
-                disabled={inputProps.isLoading}/>
-
-            <button 
-                className="sendButton" 
-                onClick={handleSend}
-                disabled={inputProps.isLoading || text.trim() === ""}>
-                <img src={sendButtonImage} alt="Send" className='send-button-img' height={45} width={45}/>
-            </button>
-        </div>     
-    );
+  return (
+    <section className="input-container" aria-label="Send a message">
+      <textarea
+        ref={textareaRef}
+        className="chat-textarea"
+        placeholder="Type a message..."
+        rows={1}
+        value={text}
+        maxLength={500}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        disabled={isLoading}
+      />
+      <button
+        className="sendButton"
+        type="button"
+        onClick={handleSend}
+        disabled={isLoading || !text.trim()}
+        aria-label="Send message"
+      >
+        <img src={sendButtonImage} alt="" className="send-button-img" height={32} width={32} />
+      </button>
+    </section>
+  );
 }
 
-export default InputBox
+export default InputBox;

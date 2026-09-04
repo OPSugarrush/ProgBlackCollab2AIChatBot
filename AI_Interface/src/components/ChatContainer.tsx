@@ -1,91 +1,89 @@
-import InputBox from "./InputBox";
-import MessageList from "./MessageList";
-import type { Message } from "../type";
-import { useEffect, useState } from "react";
-import {v4 as uuidv4} from 'uuid';
+import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
-function ChatContainer(){
-    const [messages, setMessages] = useState<Message[]>([])
-    const [isLoading, setIsLoading] = useState(false)
-    const [showStartTyping, setShowStartTyping] = useState(true);
-    const [messageReceived, setMessageReceived] = useState(false);
+import type { Message } from '../type';
+import InputBox from './InputBox';
+import MessageList from './MessageList';
 
-    useEffect(() => {
-        if(messages.length > 0){
-            setShowStartTyping(false);
-        }
-    }, [messages]);
+const CHAT_API_URL = 'http://127.0.0.1:8000/chat';
 
-    // Updating message list 
-    const onSendMessage = async (message: Message) => {
-        setMessageReceived(false);
-        console.log("New Message:", message); // Debugging log
-        setMessages(prevMessages => [...prevMessages, message])
+/** Owns the conversation state and coordinates requests to the FastAPI server. */
+function ChatContainer() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-        // Add loading message to message list
-        const loadingMessage: Message = {
-            id: uuidv4(),
-            sender: 'system',
-            content: '',
-            timestamp: new Date().toLocaleTimeString(),
-        }
-        setMessages(prevMessages => [...prevMessages, loadingMessage]);
+  /** Replace the placeholder at the exact position where it was added. */
+  const replacePendingMessage = (messageId: string, replacement: Message) => {
+    setMessages((previousMessages) =>
+      previousMessages.map((message) =>
+        message.id === messageId ? replacement : message,
+      ),
+    );
+  };
 
-        // Get response from backend
-         try {
-            const response = await fetch('http://127.0.0.1:8000/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ message: message.content })
-            });
+  const onSendMessage = async (content: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    const userMessage: Message = {
+      id: uuidv4(),
+      sender: 'user',
+      content,
+      timestamp,
+      status: 'sent',
+    };
+    // A temporary entry is replaced once the request finishes, which prevents
+    // the loading spinner from being left behind after an error.
+    const pendingMessage: Message = {
+      id: uuidv4(),
+      sender: 'system',
+      content: '',
+      timestamp,
+      status: 'sending',
+    };
 
-            if (response.ok) {
-                setMessageReceived(true);
+    setMessages((previousMessages) => [...previousMessages, userMessage, pendingMessage]);
+    setIsLoading(true);
 
-                const data = await response.json();
-                console.log("Response from backend:", data);
+    try {
+      const response = await fetch(CHAT_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: content }),
+      });
 
-                // Create the bot message and add it to the message list
-                const systemMessage: Message = {
-                    id: uuidv4(),
-                    sender: 'system',
-                    content: data.response,
-                    timestamp: new Date().toLocaleTimeString(),
-                    status: 'sent'
-                };
-               
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}`);
+      }
 
-                setMessages(prevMessages => {
-                    const updatedMessages = prevMessages.map(msg => 
-                    msg.id === loadingMessage.id ? systemMessage : msg);
-                    return updatedMessages;
-                });
-            } else {
-                throw new Error(`Server error: ${response.status}`);
-            }
-        } catch (error) {
-            setMessageReceived(true);
+      const data: { response?: string } = await response.json();
+      if (!data.response) {
+        throw new Error('Server response did not contain chatbot text');
+      }
 
-            console.error("Failed to fetch response from backend", error);
-            const errorMessage: Message = {
-                id: uuidv4(),
-                sender: 'system',
-                content: `Error: Failed to communicate with the server.`,
-                timestamp: new Date().toLocaleTimeString(),
-                status: 'error'
-            };
-            setMessages(prevMessage => [...prevMessage, errorMessage]);
-        } finally {
-            setIsLoading(false);
-        }
-    } 
+      replacePendingMessage(pendingMessage.id, {
+        ...pendingMessage,
+        content: data.response,
+        timestamp: new Date().toLocaleTimeString(),
+        status: 'sent',
+      });
+    } catch (error) {
+      console.error('Unable to contact the chatbot API:', error);
+      replacePendingMessage(pendingMessage.id, {
+        ...pendingMessage,
+        content: 'Sorry, I could not communicate with the server. Please try again.',
+        timestamp: new Date().toLocaleTimeString(),
+        status: 'error',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return(<div className="chat-container">
-        <MessageList messages={messages} showStartTyping={showStartTyping} messageReceived={messageReceived}></MessageList>
-        <InputBox onSendMessage={onSendMessage} isLoading={isLoading} setLoading={setIsLoading}></InputBox>
-    </div>)
+  return (
+    <main className="chat-container">
+      <MessageList messages={messages} />
+      <InputBox onSendMessage={onSendMessage} isLoading={isLoading} />
+    </main>
+  );
 }
 
-export default ChatContainer
+export default ChatContainer;

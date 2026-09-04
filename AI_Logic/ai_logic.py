@@ -1,223 +1,86 @@
-# Jacob Deheer-Graham
-"""
-This part handles the core AI logic for the chatbot system.
+"""Conversation handling and Gemini integration for the chatbot.
 
-Role in project:
-- Receives user input
-- Processes it into a structured format
-- Builds a prompt
-- Generates a response (rule-based for now)
-
-This file is now designed to be imported into the FastAPI backend by Jimi,
-where handle_message() will be called inside the /chat endpoint.
-
-Progression from previous version:
-- Added simple conversation memory (last 2 - 3 messages)
-- Added AI fallback for unknown responses 
-
-Future expansions:
-- Improve prompt structure using history further
+The module keeps a short in-memory conversation history, answers a few simple
+messages locally, and uses Gemini for all other questions.  ``handle_message``
+is the public function used by the FastAPI application.
 """
 
-# AI fallback setup
 import os
-import google.generativeai as genai
-from dotenv import load_dotenv
 from pathlib import Path
 
-# This finds the .env file even if the terminal is in a different folder
-current_dir = Path(__file__).resolve().parent
-env_in_current = current_dir / ".env"
-env_in_backend = current_dir.parent / "backend" / ".env"
+import google.generativeai as genai
+from dotenv import load_dotenv
 
-if env_in_current.exists():
-    load_dotenv(dotenv_path=env_in_current)
-elif env_in_backend.exists():
-    load_dotenv(dotenv_path=env_in_backend)
-else:
-   
-    load_dotenv()
+# Look for a project-level .env file first, so the API key is available whether
+# the backend is started from the repository root or from the Backend folder.
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
 
-
-# Conversation Memory
-
-history = []
+# This history is deliberately small because it is shared by the running local
+# demo. A production app would store separate histories for each user/session.
+history: list[dict[str, str]] = []
 MAX_HISTORY = 3
 
-
-# Input Processing
-
 def process_input(user_input: str) -> str:
-    """
-    Cleans and standardises user input.
-
-    Why this exists:
-    - Separates preprocessing from response logic
-    - Makes system easier to expand later
-
-    Current behaviour:
-    - Converts text to lowercase
-    - Removes extra whitespace
-    - Basic type safety
-    """
+    """Return trimmed, case-normalised text for matching and prompting."""
     if not isinstance(user_input, str):
         return ""
 
-    cleaned = user_input.strip().lower()
-
-    return cleaned
-
-
-# Prompt Building
+    return user_input.strip().lower()
 
 def build_prompt(user_input: str) -> str:
-    """
-    Converts processed input into a structured prompt format.
-
-    Why this exists:
-    - Introduces prompt engineering concept
-    - Mimics how real AI systems structure input
-
-    Structure:
-    - Basic system instruction
-    - Conversation history
-    - User message
-    - AI response placeholder
-
-    Example output:
-    You are a helpful assistant.
-    User: hello
-    AI: Hi!
-    User: how are you
-    AI:
-    """
-
-    system_instruction = "You are a helpful assistant.\n"
-
-    history_text = ""
+    """Build the prompt passed to Gemini, including recent context."""
+    conversation = ["You are a helpful, concise assistant."]
 
     for entry in history:
-        history_text += f"User: {entry['user']}\n"
-        history_text += f"AI: {entry['bot']}\n"
+        conversation.extend((f"User: {entry['user']}", f"Assistant: {entry['bot']}"))
 
-    prompt = (
-        f"{system_instruction}\n"
-        f"{history_text}"
-        f"User: {user_input}\n"
-        f"AI:"
-    )
-
-    return prompt
-
-
-# Response Generation
+    conversation.extend((f"User: {user_input}", "Assistant:"))
+    return "\n".join(conversation)
 
 def generate_response(user_input: str) -> str:
-    """
-    Main function that generates a chatbot response.
-
-    This function is used by:
-    - FastAPI backend (via handle_message)
-
-    Flow:
-    user input → processed → prompt → response → memory update 
-    """
-
-    # Step 1: Process input
+    """Create a reply, then save the user/reply pair in short-term memory."""
     processed_input = process_input(user_input)
-
-    # Step 2: Build prompt (now includes memory)
     prompt = build_prompt(processed_input)
-    # Prompt currently not used directly in rule-based response,
-    # but included to demonstrate AI system structure and for future expansion.
-
-
-    # Step 3: Generate response (hybrid system)
 
     if "hello" in processed_input:
         response = "Hi! How can I help you?"
-
     elif "how are you" in processed_input:
         response = "I'm just a simple chatbot, but I'm working fine!"
-
     elif "bye" in processed_input:
         response = "Goodbye! See you later."
-
-    # Simple memory-based response
-    elif "what did i just say" in processed_input: # Note: lowercased because of process_input()
+    elif "what did i just say" in processed_input:
         if history:
             response = f"You previously said: '{history[-1]['user']}'"
         else:
             response = "I don't have any previous messages stored yet."
-
     else:
-        # AI fallback (Now using Google Gemini)
         try:
-            # We use Gemini 1.5 Flash as it is fast and has a free tier
-            # Ensure API is configured with whatever is currently in environment
             api_key = os.environ.get("GEMINI_API_KEY")
             if not api_key:
-                raise ValueError("No API Key found in environment") 
-                
+                raise ValueError("GEMINI_API_KEY is not configured")
+
+            # Flash is a fast model that is suitable for this local chat demo.
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            
+            model = genai.GenerativeModel("gemini-2.5-flash")
             ai_response = model.generate_content(prompt)
-            response = ai_response.text           
-        except Exception as e:
-            # This will print the EXACT reason it's failing in your terminal
-            print(f"DEBUG: The AI failed because: {e}")
-            response = "I'm not sure how to respond to that yet."
+            response = ai_response.text or "I couldn't generate a response just now."
+        except Exception as error:
+            # Keep technical details in the server terminal, not the UI.
+            print(f"Gemini request failed: {error}")
+            response = "I'm sorry, I couldn't reach the AI service just now."
 
-
-    # Step 4: Update memory 
-
-    history.append({
-        "user": processed_input,
-        "bot": response
-    })
-
-    # Limit memory size
-    if len(history) > MAX_HISTORY:
-        history.pop(0)
+    history.append({"user": processed_input, "bot": response})
+    del history[:-MAX_HISTORY]  # Retain only the most recent exchanges.
 
     return response
 
-
-# Backend Interface 
-
-def handle_message(user_input: str) -> dict:
-    """
-    Handles a message and returns a structured response.
-
-    Why this exists:
-    - Acts as the interface between backend and AI logic
-    - Returns data in JSON-friendly format
-
-    This is the function Jimi will call in FastAPI.
-    """
-
-    response_text = generate_response(user_input)
-
-    return {
-        "response": response_text
-    }
-
-
-# Local Test System
+def handle_message(user_input: str) -> dict[str, str]:
+    """Return a JSON-friendly response for the backend endpoint."""
+    return {"response": generate_response(user_input)}
 
 def run_chat():
-    """
-    Runs a simple terminal-based chatbot.
-
-    Purpose:
-    - Allows independent testing without backend/frontend
-    - Now reflects how backend will use the system
-    - Allows testing of memory behaviour (NEW)
-
-    How to use:
-    python ai_logic.py
-    """
+    """Run a small command-line chat for testing without the web interface."""
 
     print("Simple Chatbot (type 'exit' to quit)\n")
 
@@ -231,9 +94,6 @@ def run_chat():
         result = handle_message(user_message)
 
         print(f"Bot: {result['response']}")
-
-
-# Entry Point
 
 if __name__ == "__main__":
     run_chat()

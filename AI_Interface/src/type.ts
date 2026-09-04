@@ -1,16 +1,15 @@
+/** A single entry shown in the conversation window. */
 export interface Message {
   id: string;
   sender: 'user' | 'system';
   content: string;
   timestamp: string;
-  // Optional: For handling errors or "retry" logic
+  /** Used to show the in-progress state and API errors in the UI. */
   status?: 'sending' | 'sent' | 'error';
 }
 
+/** Props required by the component that collects a new user message. */
 export interface InputBoxProps {
-  // Attributes passed to InputBox component
-    onSendMessage: (message: Message) => void;
-    isLoading?: boolean
-    placeholder?: string
-    setLoading: (loading: boolean) => void;
+  onSendMessage: (content: string) => void;
+  isLoading: boolean;
 }

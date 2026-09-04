@@ -1,0 +1,7 @@
+# Backend API framework and local development server.
+fastapi
+uvicorn
+
+# Environment-variable loading and Gemini API client.
+python-dotenv
+google-generativeai

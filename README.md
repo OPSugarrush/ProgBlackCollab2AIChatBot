@@ -26,16 +26,21 @@ Clone the repository and open it in Visual Studio Code.
 
 ### 2. Set up the Python environment
 
-Using an Anaconda command prompt:
+Open the integrated Visual Studio Code terminal in the project root. Use
+Python 3.10 or 3.11 for this project; the current Gemini package may not yet
+support newer Python releases. Create and activate a standard virtual
+environment:
 
 ```bash
-conda create --name chatbot python=3.10
-conda activate chatbot
-pip install fastapi
-pip install uvicorn
-pip install python-dotenv
-pip install google-generativeai
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
+
+In Visual Studio Code, select the `.venv` interpreter. The virtual
+environment is local to this project and is excluded from Git. If `py -3.11`
+is unavailable, install Python 3.11 and reopen the VS Code terminal first.
 
 ### 3. Configure the Gemini API
 
@@ -49,19 +54,20 @@ GEMINI_API_KEY=your_api_key_here
 
 ### 4. Start the backend
 
-Ensure `__init__.py` exists in the `Jacob_AI_Logic` folder for imports.
-
-In the Visual Studio Code terminal, change directory to `Jimi_Backend` and run:
+The included `__init__.py` files allow the backend to import `AI_Logic`.
+From the project root, run:
 
 ```bash
-uvicorn main:app --reload
+python -m uvicorn Backend.main:app --reload
 ```
 
 ### 5. Start the frontend
 
-Open a new terminal, change directory to `Joshua_AI_Interface`, and run:
+Open a new terminal, change directory to `AI_Interface`, and run:
 
 ```bash
+cd AI_Interface
+npm install
 npm run dev
 ```
 
