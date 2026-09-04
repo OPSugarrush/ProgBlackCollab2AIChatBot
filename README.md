@@ -1,6 +1,6 @@
 # AI Chatbot
 
-A team-developed LLM chatbot application combining a Python backend with a React-based web interface. The system uses the Gemini API to provide AI functionality and was developed collaboratively using Git/GitHub.
+A team-developed chatbot application combining a Python backend with a React-based web interface. The system uses the Gemini API to provide AI functionality and was developed collaboratively using Git/GitHub.
 
 ## Project Structure
 
