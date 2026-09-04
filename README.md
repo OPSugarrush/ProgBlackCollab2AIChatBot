@@ -1,24 +1,68 @@
-# IMPORTANT FOR STEVEN BRADLEY: Jacob Deheer-Graham, twrk86, Private Submission Repository link for assignment marker: https://github.com/OPSugarrush/comp1101-summative2-submission
+# AI Chatbot
 
-# ProgBlackCollab2AIChatBot
-## For things to function:
-* Clone repo
+A team-developed LLM chatbot application combining a Python backend with a React-based web interface. The system uses the Gemini API to provide AI functionality and was developed collaboratively using Git/GitHub.
 
-### In Anaconda command prompt:
-1. Create environment: conda create --name chatbot python=3.10
-2. Activate environment: conda activate chatbot
-3. Install FastAPI (backend framework): pip install fastapi
-4. Install Uvicorn (server to run FastAPI): pip install uvicorn
-5. Install dotenv (for API key loading): pip install python-dotenv
-6. Install Google Generative AI (for AI fallback): pip install -google-generativeai
+## Project Structure
 
-### To get API key: 
-* Go to Google AI Studio and create an API key
+The application is divided into several components covering the frontend, backend API and AI conversation logic.
 
-### Visual Studio code
-1. Create .env file in project root and add: **GEMINI_API_KEY=your_api_key_here**
-2. Ensure __init__.py exists in Jacob_AI_Logic folder (for imports)
-3. Press Ctrl+Shift+P to open **Command Pallete** and search "Python: Select Interpreter" and find "chatbot". Click on **"chatbot"**
-4. Run backend server in Visual Studio Code terminal (Ctrl+Shift+`): uvicorn main:app --reload **(first change directory to "Jimi_Backend" in terminal)**
-5. Open new terminal, change directory to **"Joshua_AI_Interface"** and then run server for frontend with **npm run dev**
+Main work on each section for final project iteration: 
 
+* **`Jacob_AI_Logic`** – AI conversation logic, prompt processing and Gemini API integration
+* **`Jimi_Backend`** – FastAPI backend and API integration
+* **`Joshua_AI_Interface`** – React-based frontend interface
+
+Development was carried out collaboratively, with team members contributing across different parts of the application, including frontend development and integration between system components.
+
+## Technologies
+
+**Python, Gemini API, FastAPI, React, JavaScript, HTML/CSS, Git/GitHub**
+
+## Running the Project
+
+### 1. Clone the repository
+
+Clone the repository and open it in Visual Studio Code.
+
+### 2. Set up the Python environment
+
+Using an Anaconda command prompt:
+
+```bash
+conda create --name chatbot python=3.10
+conda activate chatbot
+pip install fastapi
+pip install uvicorn
+pip install python-dotenv
+pip install google-generativeai
+```
+
+### 3. Configure the Gemini API
+
+Create an API key through Google AI Studio.
+
+Create a `.env` file in the project root and add:
+
+```env
+GEMINI_API_KEY=your_api_key_here
+```
+
+### 4. Start the backend
+
+Ensure `__init__.py` exists in the `Jacob_AI_Logic` folder for imports.
+
+In the Visual Studio Code terminal, change directory to `Jimi_Backend` and run:
+
+```bash
+uvicorn main:app --reload
+```
+
+### 5. Start the frontend
+
+Open a new terminal, change directory to `Joshua_AI_Interface`, and run:
+
+```bash
+npm run dev
+```
+
+The frontend and backend can then be accessed through their locally hosted development servers.
